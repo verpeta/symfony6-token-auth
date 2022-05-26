@@ -16,7 +16,6 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - demo-mysql
-      - demo-redis
     env_file:
       - .env
     volumes:
@@ -41,24 +40,6 @@ services:
       - traefik.enable=true
       - traefik.http.routers.demo-nginx.rule=Host(`demo.localhost`)
 
-  demo-redis:
-    container_name: demo-redis
-    build:
-      context: ./docker/redis
-    command: redis-server --appendonly yes
-    hostname: "redis"
-    volumes:
-      - demo-redis-storage:/data
-    networks:
-      - demo-network
-      - demo-proxy.network
-    labels:
-      - traefik.enable=true
-      - traefik.tcp.services.demo-redis.loadBalancer.server.port=6379
-      - traefik.tcp.routers.demo-redis.entrypoints=redis
-      - traefik.tcp.routers.demo-redis.rule=HostSNI(`*`)
-      - traefik.tcp.routers.demo-redis.service=demo-redis
-
   demo-mysql:
     container_name: demo-mysql
     build:
@@ -78,22 +59,6 @@ services:
       - traefik.tcp.routers.demo-mysql.rule=HostSNI(`*`)
       - traefik.tcp.routers.demo-mysql.service=demo-mysql
 
-  demo-rabbit:
-    container_name: demo-rabbit
-    build:
-      context: ./docker/rmq
-    volumes:
-      - demo-rabbit-storage:/var/lib/rabbitmq
-    networks:
-      - demo-network
-      - demo-proxy.network
-    labels:
-      - traefik.enable=true
-      - traefik.tcp.services.demo-rabbit.loadBalancer.server.port=5672
-      - traefik.tcp.routers.demo-rabbit.entrypoints=rabbit
-      - traefik.tcp.routers.demo-rabbit.rule=HostSNI(`*`)
-      - traefik.tcp.routers.demo-rabbit.service=demo-rabbit
-
   demo-proxy:
     container_name: demo-proxy
     image: traefik:v2.5
@@ -103,16 +68,12 @@ services:
       - --providers.docker.network=demo-proxy.network
       - --providers.docker.useBindPortIP=false
       - --entrypoints.web.address=:80
-      - --entrypoints.redis.address=:6379
       - --entrypoints.mysql.address=:3306
-      - --entrypoints.rabbit.address=:5672
       - --api.dashboard=true
       - --api.insecure=true
     ports:
       - "80:80"
-      - "6379:6379"
       - "3306:3306"
-      - "5672:5672"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -124,6 +85,4 @@ services:
       - "traefik.http.routers.api.service=api@internal"
 
 volumes:
-  demo-redis-storage:
   demo-mysql-storage:
-  demo-rabbit-storage:

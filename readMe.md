@@ -1,10 +1,6 @@
 # What inside
-1. **Redis** - 6.2.0
-2. **Mysql** - 8.0.28
-3. **RabbitMQ** - 3.10.2
-4. **Nginx** - 1.12
-5. **Php-fpm** - 8.1 (With all extensions & code examples to work with described above services).
-6. **Docker-compose** with **traefik**.
+1. Symfony 6 with token authorization.
+2. Local env based on https://github.com/verpeta/php_fpm-nginx-mysql-docker
 
 # How to install
 1. Run `docker-compose up -d`
